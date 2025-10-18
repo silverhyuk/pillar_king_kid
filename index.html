@@ -6,10 +6,50 @@
   <title>PillarKing Kids – 찰흙 & 줄 비유로 배우는 기둥 튼튼함</title>
   <style>
     :root{
-      --bg:#0b1020; --fg:#e9eef7; --muted:#b7c1d6; --card:#121833; --accent:#6ee7ff; --accent2:#ffb86b; --good:#5ee27b; --warn:#ff6b6b;
+      --bg:#0b1020;
+      --fg:#e9eef7;
+      --muted:#b7c1d6;
+      --card:#121833;
+      --accent:#6ee7ff;
+      --accent2:#ffb86b;
+      --good:#5ee27b;
+      --warn:#ff6b6b;
+      --card-border:rgba(255,255,255,.06);
+      --control-bg:#0e1530;
+      --control-fg:var(--fg);
+      --control-border:rgba(255,255,255,.14);
+      --chip-border:rgba(255,255,255,.1);
+      --shape-fill:rgba(255,255,255,.06);
+      --shape-stroke:rgba(255,255,255,.9);
+      --tag-bg:rgba(255,255,255,.08);
+      --divider:rgba(255,255,255,.1);
+      --meter-bg:#0e1530;
+      --stage-halo:rgba(255,255,255,.05);
+      --panel-soft:rgba(255,255,255,.04);
     }
     @media (prefers-color-scheme: light){
-      :root{ --bg:#f7f9fc; --fg:#0f172a; --muted:#475569; --card:#ffffff; --accent:#0ea5e9; --accent2:#ea580c; --good:#16a34a; --warn:#dc2626; }
+      :root{
+        --bg:#f7f9fc;
+        --fg:#0f172a;
+        --muted:#475569;
+        --card:#ffffff;
+        --accent:#0ea5e9;
+        --accent2:#ea580c;
+        --good:#16a34a;
+        --warn:#dc2626;
+        --card-border:rgba(15,23,42,.08);
+        --control-bg:#e8f3ff;
+        --control-fg:#0f172a;
+        --control-border:rgba(15,23,42,.12);
+        --chip-border:rgba(15,23,42,.15);
+        --shape-fill:rgba(15,23,42,.08);
+        --shape-stroke:rgba(15,23,42,.65);
+        --tag-bg:rgba(14,21,48,.12);
+        --divider:rgba(15,23,42,.12);
+        --meter-bg:rgba(148,163,184,.35);
+        --stage-halo:rgba(14,21,48,.06);
+        --panel-soft:rgba(15,23,42,.06);
+      }
     }
     html,body{height:100%}
     body{margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto; background:var(--bg); color:var(--fg);}
@@ -17,18 +57,19 @@
     header{display:flex; gap:16px; align-items:center;}
     .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#001016;font-weight:900}
     h1{font-size:22px;margin:0}
-    .card{background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:16px; box-shadow: 0 6px 24px rgba(0,0,0,.18)}
+    .card{background:var(--card); border:1px solid var(--card-border); border-radius:14px; padding:16px; box-shadow: 0 6px 24px rgba(0,0,0,.18)}
     .grid{display:grid; grid-template-columns: 320px 1fr; gap:16px; margin-top:16px}
     .controls label{display:block; font-size:14px; color:var(--muted); margin:10px 0 4px}
     .row{display:flex; gap:8px; flex-wrap:wrap}
-    select,button{background:#0e1530; color:var(--fg); border:1px solid rgba(255,255,255,.1); padding:10px 12px; border-radius:10px}
+    select,button{background:var(--control-bg); color:var(--control-fg); border:1px solid var(--control-border); padding:10px 12px; border-radius:10px; transition:all .2s ease}
+    select:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-offset:2px}
     input[type="range"]{width:100%}
     button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#001016; border:0; font-weight:700}
     .chips{display:flex; gap:8px; flex-wrap:wrap}
-    .chip{padding:6px 10px; border:1px solid rgba(255,255,255,.1); border-radius:999px; cursor:pointer; user-select:none}
+    .chip{padding:6px 10px; border:1px solid var(--chip-border); border-radius:999px; cursor:pointer; user-select:none; background:transparent}
     .chip.active{background:var(--accent); color:#001016; border-color:transparent; font-weight:700}
     .viz{display:grid; grid-template-rows: 280px 1fr; gap:16px}
-    .svgwrap{background:radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,.05), transparent); border-radius:14px; display:grid; grid-template-columns:1fr 320px; gap:12px;}
+    .svgwrap{background:radial-gradient(60% 60% at 50% 50%, var(--stage-halo), transparent); border-radius:14px; display:grid; grid-template-columns:1fr 320px; gap:12px;}
     .stage{position:relative; display:grid; place-items:center; overflow:hidden;}
     svg{width:100%; height:100%;}
     .press{position:absolute; right:16px; top:16px}
@@ -50,14 +91,15 @@
     .legend{font-size:13px; color:var(--muted)}
     .barlist{display:flex; flex-direction:column; gap:8px; overflow:auto; max-height:240px; padding-right:8px}
     .bar{display:grid; grid-template-columns: 90px 1fr 56px; align-items:center; gap:8px}
-    .bar .meter{height:12px; background:#0e1530; border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.08)}
+    .bar .meter{height:12px; background:var(--meter-bg); border-radius:999px; overflow:hidden; border:1px solid var(--control-border)}
     .bar .meter > i{display:block; height:100%; background:linear-gradient(90deg,var(--good),var(--accent));}
     .note{font-size:14px; color:var(--muted)}
     .explain{display:grid; grid-template-columns: 1fr 1fr; gap:12px}
-    .tag{display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; background:rgba(255,255,255,.08); margin-left:6px}
+    .tag{display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; background:var(--tag-bg); margin-left:6px}
     .footer{opacity:.8; font-size:12px; margin-top:12px}
-    .formula{margin-top:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:12px;}
+    .formula{margin-top:12px; background:var(--panel-soft); border:1px solid var(--control-border); border-radius:10px; padding:12px;}
     .formula pre{margin:6px 0 0; font-size:13px; line-height:1.5; white-space:pre-wrap; color:var(--muted);}
+    .card.ghost{background:transparent; border-color:var(--control-border);}
   </style>
 </head>
 <body>
@@ -91,13 +133,13 @@
           <button id="resetBtn">리셋</button>
         </div>
 
-        <hr style="border-color: rgba(255,255,255,.1)">
+        <hr style="border-color: var(--divider)">
         <div class="explain">
-          <div class="card" style="background:transparent; border-color:rgba(255,255,255,.12)">
+          <div class="card ghost">
             <b>찰흙(면적 같게)</b>
             <p class="note">같은 양의 찰흙으로 모양을 만들어요. 둥근 원은 힘이 고르게 퍼져서 잘 버텨요.</p>
           </div>
-          <div class="card" style="background:transparent; border-color:rgba(255,255,255,.12)">
+          <div class="card ghost">
             <b>줄(둘레 같게)</b>
             <p class="note">같은 길이의 줄로 둘러싸요. 삼각형은 더 꽉 모여서 잘 버텨요.</p>
           </div>
@@ -356,8 +398,8 @@
         const path = ptsToPath(d.pts.map(p=>[x + (p[0])*scale, y + (p[1])*scale]));
         const g = document.createElementNS('http://www.w3.org/2000/svg','path');
         g.setAttribute('d', path);
-        g.setAttribute('fill', 'rgba(255,255,255,0.06)');
-        g.setAttribute('stroke', 'rgba(255,255,255,0.9)');
+        g.setAttribute('fill', 'var(--shape-fill)');
+        g.setAttribute('stroke', 'var(--shape-stroke)');
         g.setAttribute('stroke-width', '1.6');
         g.setAttribute('vector-effect','non-scaling-stroke');
         g.setAttribute('aria-label', d.label);
