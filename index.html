@@ -124,8 +124,8 @@
         <label>비교할 모양</label>
         <div class="chips" id="shapeChips"></div>
 
-        <label>기둥 높이 L (m)</label>
-        <input type="range" id="height" min="1" max="5" step="0.5" value="2"/>
+        <label>기둥 높이 L (cm)</label>
+        <input type="range" id="height" min="1" max="5" step="0.5" value="3"/>
 
         <label>보기 옵션</label>
         <div class="row">
@@ -166,7 +166,7 @@
           <div class="formula" aria-live="polite">
             <div><b>계산식</b></div>
             <pre id="formulaBox">찰흙 모드 (면적 A0 = 0.01 m^2 유지)
-원: r = sqrt(A0 / pi) ≈ 0.056 m
+원: r = sqrt(A0 / pi) ≈ 0.056 m (5.6 cm)
 정n각형: R = sqrt((2 * A0) / (n * sin(2 * pi / n)))
 Strength Score = (I / I_max)^1.25 × 100
 → 이 반지름과 지수를 이용해 I_min(단면 2차모멘트)을 비교합니다.</pre>
@@ -259,7 +259,7 @@ Strength Score = (I / I_max)^1.25 × 100
 
     const state = {
       mode: 'area', // 'area' | 'perimeter'
-      height: 2,
+      height: 3,
       enabled: new Set(shapes.map(s=>s.id))
     };
 
@@ -289,7 +289,7 @@ Strength Score = (I / I_max)^1.25 × 100
     });
 
     document.getElementById('height').addEventListener('input', (e)=>{ state.height = +e.target.value; renderAll(); });
-    document.getElementById('resetBtn').onclick = ()=>{ state.mode='area'; state.height=2; state.enabled=new Set(shapes.map(s=>s.id)); document.getElementById('height').value=2; document.querySelectorAll('.chip[data-mode]').forEach((b,i)=>b.classList.toggle('active', i===0)); document.getElementById('modeTag').textContent='찰흙 모드'; chipsWrap.querySelectorAll('.chip').forEach(c=>c.classList.add('active')); renderAll(); };
+    document.getElementById('resetBtn').onclick = ()=>{ state.mode='area'; state.height=3; state.enabled=new Set(shapes.map(s=>s.id)); document.getElementById('height').value=3; document.querySelectorAll('.chip[data-mode]').forEach((b,i)=>b.classList.toggle('active', i===0)); document.getElementById('modeTag').textContent='찰흙 모드'; chipsWrap.querySelectorAll('.chip').forEach(c=>c.classList.add('active')); renderAll(); };
 
     // Simple press animation handled via CSS keyframes
     const pressBtn = document.getElementById('pressBtn');
@@ -310,7 +310,7 @@ Strength Score = (I / I_max)^1.25 × 100
     function renderAll(){
       const mode = state.mode;
       const A0 = 100/1e4; // 100 cm^2 => m^2 (internal unit = m, but SVG is unitless; only relative I matters)
-      const P0 = 120/100; // 120 cm => m (relative only)
+      const P0 = 12/100; // 12 cm => m (relative only)
 
       // Build dataset
       let data=[];
@@ -368,19 +368,24 @@ Strength Score = (I / I_max)^1.25 × 100
       const formulaBox = document.getElementById('formulaBox');
       if(formulaBox){
         if(mode==='area'){
-          const rCircle = circleByArea(A0).r.toFixed(3);
+          const circ = circleByArea(A0);
+          const rCircle = circ.r.toFixed(3);
+          const rCircleCm = (circ.r*100).toFixed(1);
           formulaBox.textContent = [
             `찰흙 모드 (면적 A0 = ${A0.toFixed(2)} m^2 유지)`,
-            `원: r = sqrt(A0 / pi) ≈ ${rCircle} m`,
+            `원: r = sqrt(A0 / pi) ≈ ${rCircle} m (${rCircleCm} cm)`,
             '정n각형: R = sqrt((2 * A0) / (n * sin(2 * pi / n)))',
             'Strength Score = (I / I_max)^1.25 × 100',
             '→ 이 반지름과 지수를 이용해 I_min(단면 2차모멘트)을 비교합니다.'
           ].join('\n');
         } else {
-          const rCircle = circleByPerimeter(P0).r.toFixed(3);
+          const circ = circleByPerimeter(P0);
+          const rCircle = circ.r.toFixed(3);
+          const rCircleCm = (circ.r*100).toFixed(2);
+          const P0cm = (P0*100).toFixed(0);
           formulaBox.textContent = [
-            `줄 모드 (둘레 P0 = ${P0.toFixed(1)} m 유지)`,
-            `원: r = P0 / (2 * pi) ≈ ${rCircle} m`,
+            `줄 모드 (둘레 P0 = ${P0.toFixed(2)} m ≈ ${P0cm} cm 유지)`,
+            `원: r = P0 / (2 * pi) ≈ ${rCircle} m (${rCircleCm} cm)`,
             '정n각형: R = P0 / (2 * n * sin(pi / n))',
             'Strength Score = (I / I_max)^1.10 × 100',
             '→ 같은 방식으로 I_min을 계산해 순위를 만듭니다.'
