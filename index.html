@@ -329,10 +329,16 @@
 
       // Normalize
       const maxI = Math.max(...data.map(d=>d.I));
-      data.forEach(d=> d.score = Math.round(100*d.I/maxI));
+      const scoreExponent = (mode==='area') ? 1.25 : 1.1;
+      data.forEach(d=>{
+        const ratio = maxI === 0 ? 0 : d.I/maxI;
+        const scoreExact = Math.pow(ratio, scoreExponent) * 100;
+        d.scoreExact = scoreExact;
+        d.score = Math.round(scoreExact);
+      });
 
       // Sort desc by score
-      data.sort((a,b)=> b.score - a.score);
+      data.sort((a,b)=> b.scoreExact - a.scoreExact);
 
       // SVG preview
       drawPreview(data);
@@ -343,8 +349,13 @@
       data.forEach(d=>{
         const row=document.createElement('div'); row.className='bar';
         const name=document.createElement('div'); name.textContent=d.label; row.appendChild(name);
-        const meter=document.createElement('div'); meter.className='meter'; const fill=document.createElement('i'); fill.style.width = d.score+'%'; meter.appendChild(fill); row.appendChild(meter);
-        const val=document.createElement('div'); val.style.textAlign='right'; val.textContent=d.score; row.appendChild(val);
+        const meter=document.createElement('div'); meter.className='meter';
+        const fill=document.createElement('i');
+        const clampedScore = Math.max(0, Math.min(100, d.scoreExact));
+        fill.style.width = clampedScore.toFixed(1)+'%';
+        meter.appendChild(fill);
+        row.appendChild(meter);
+        const val=document.createElement('div'); val.style.textAlign='right'; val.textContent=clampedScore.toFixed(1); row.appendChild(val);
         barList.appendChild(row);
       });
 
