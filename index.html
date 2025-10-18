@@ -162,7 +162,7 @@
         
         <div class="card" id="readout">
           <div><b>설명</b></div>
-          <p class="note" id="explainText">같은 찰흙(면적)일 땐 둥근 기둥이 가장 잘 버텨요. 같은 줄(둘레)일 땐 삼각형이 제일 빡빡해서 잘 버텨요.</p>
+          <p class="note" id="explainText">선택한 모양에 따라 상대 강도 설명이 여기에 표시됩니다.</p>
           <div class="formula" aria-live="polite">
             <div><b>계산식</b></div>
             <pre id="formulaBox">찰흙 모드 (면적 A0 = 0.01 m^2 유지)
@@ -362,9 +362,22 @@ Strength Score = (I / I_max)^1.25 × 100
 
       // Explain text
       const txt = document.getElementById('explainText');
-      txt.innerHTML = (mode==='area')
-        ? '같은 찰흙(면적)으로 만들면, 둥근 원이 힘을 고르게 나눠 가져서 제일 잘 버텨요. 삼각형처럼 뾰족한 모양은 힘이 한쪽으로 몰려요.'
-        : '같은 길이의 줄(둘레)로 둘러싸면, 삼각형이 더 꽉 모여 있어서 잘 버텨요. 원은 넓게 퍼져 조금 더 쉽게 눌려요.';
+      if(data.length===0){
+        txt.textContent = '비교할 모양을 하나 이상 선택해 주세요.';
+      } else if(data.length===1){
+        const only = data[0];
+        txt.textContent = (mode==='area')
+          ? `${only.label}만 선택되어 있어요. 같은 찰흙(면적) 조건에서 점수는 약 ${only.scoreExact.toFixed(1)}입니다.`
+          : `${only.label}만 선택되어 있어요. 같은 줄(둘레) 조건에서 점수는 약 ${only.scoreExact.toFixed(1)}입니다.`;
+      } else {
+        const best = data[0];
+        const worst = data[data.length-1];
+        const bestScore = best.scoreExact.toFixed(1);
+        const worstScore = worst.scoreExact.toFixed(1);
+        txt.textContent = (mode==='area')
+          ? `같은 찰흙(면적) 조건에서 현재 선택된 모양 중 ${best.label}이 가장 높은 점수(${bestScore})를 기록했어요. ${worst.label}은 약 ${worstScore}로 상대적으로 낮아요.`
+          : `같은 줄(둘레) 조건에서 현재 선택된 모양 중 ${best.label}이 가장 높은 점수(${bestScore})를 보여요. ${worst.label}은 약 ${worstScore}로 비교적 낮아요.`;
+      }
       const formulaBox = document.getElementById('formulaBox');
       if(formulaBox){
         if(mode==='area'){
