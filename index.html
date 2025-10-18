@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PillarKing Kids – 찰흙 & 줄 비유로 배우는 기둥 튼튼함</title>
+  <style>
+    :root{
+      --bg:#0b1020; --fg:#e9eef7; --muted:#b7c1d6; --card:#121833; --accent:#6ee7ff; --accent2:#ffb86b; --good:#5ee27b; --warn:#ff6b6b;
+    }
+    @media (prefers-color-scheme: light){
+      :root{ --bg:#f7f9fc; --fg:#0f172a; --muted:#475569; --card:#ffffff; --accent:#0ea5e9; --accent2:#ea580c; --good:#16a34a; --warn:#dc2626; }
+    }
+    html,body{height:100%}
+    body{margin:0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto; background:var(--bg); color:var(--fg);}
+    .container{max-width:1100px; margin:0 auto; padding:24px;}
+    header{display:flex; gap:16px; align-items:center;}
+    .logo{width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:grid;place-items:center;color:#001016;font-weight:900}
+    h1{font-size:22px;margin:0}
+    .card{background:var(--card); border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:16px; box-shadow: 0 6px 24px rgba(0,0,0,.18)}
+    .grid{display:grid; grid-template-columns: 320px 1fr; gap:16px; margin-top:16px}
+    .controls label{display:block; font-size:14px; color:var(--muted); margin:10px 0 4px}
+    .row{display:flex; gap:8px; flex-wrap:wrap}
+    select,button{background:#0e1530; color:var(--fg); border:1px solid rgba(255,255,255,.1); padding:10px 12px; border-radius:10px}
+    input[type="range"]{width:100%}
+    button.primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#001016; border:0; font-weight:700}
+    .chips{display:flex; gap:8px; flex-wrap:wrap}
+    .chip{padding:6px 10px; border:1px solid rgba(255,255,255,.1); border-radius:999px; cursor:pointer; user-select:none}
+    .chip.active{background:var(--accent); color:#001016; border-color:transparent; font-weight:700}
+    .viz{display:grid; grid-template-rows: 280px 1fr; gap:16px}
+    .svgwrap{background:radial-gradient(60% 60% at 50% 50%, rgba(255,255,255,.05), transparent); border-radius:14px; display:grid; grid-template-columns:1fr 320px; gap:12px;}
+    .stage{position:relative; display:grid; place-items:center; overflow:hidden;}
+    svg{width:100%; height:100%;}
+    .press{position:absolute; right:16px; top:16px}
+    #preview{transform-origin:center; transform-box:fill-box;}
+    .stage.is-pressed #preview{animation:pressSquash 1.4s cubic-bezier(.24,.8,.32,1);}
+    .stage.is-pressed .press{animation:pressTag 1.4s ease;}
+    @keyframes pressSquash{
+      0%,100%{transform:scaleY(1);}
+      20%{transform:scaleY(0.82);}
+      55%{transform:scaleY(0.92);}
+      75%{transform:scaleY(0.88);}
+    }
+    @keyframes pressTag{
+      0%,100%{transform:translateY(0); opacity:1;}
+      20%{transform:translateY(-4px); opacity:.85;}
+      55%{transform:translateY(2px);}
+      75%{transform:translateY(-2px);}
+    }
+    .legend{font-size:13px; color:var(--muted)}
+    .barlist{display:flex; flex-direction:column; gap:8px; overflow:auto; max-height:240px; padding-right:8px}
+    .bar{display:grid; grid-template-columns: 90px 1fr 56px; align-items:center; gap:8px}
+    .bar .meter{height:12px; background:#0e1530; border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.08)}
+    .bar .meter > i{display:block; height:100%; background:linear-gradient(90deg,var(--good),var(--accent));}
+    .note{font-size:14px; color:var(--muted)}
+    .explain{display:grid; grid-template-columns: 1fr 1fr; gap:12px}
+    .tag{display:inline-block; padding:2px 8px; border-radius:999px; font-size:12px; background:rgba(255,255,255,.08); margin-left:6px}
+    .footer{opacity:.8; font-size:12px; margin-top:12px}
+    .formula{margin-top:12px; background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:12px;}
+    .formula pre{margin:6px 0 0; font-size:13px; line-height:1.5; white-space:pre-wrap; color:var(--muted);}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">PK</div>
+      <div>
+        <h1>PillarKing Kids – 기둥은 누가 제일 튼튼할까?</h1>
+        <div class="note">찰흙(면적 같게)과 줄(둘레 같게) 비유로 <b>원기둥 vs 삼각·네모·다각 기둥</b>을 쉽게 비교해요.</div>
+        <div class="note">연구자: 최서아</div>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card controls" aria-label="설정">
+        <label>비교 모드 <span class="tag" id="modeTag">찰흙 모드</span></label>
+        <div class="row">
+          <button class="chip active" data-mode="area">찰흙 (면적 같게)</button>
+          <button class="chip" data-mode="perimeter">줄 (둘레 같게)</button>
+        </div>
+        
+        <label>비교할 모양</label>
+        <div class="chips" id="shapeChips"></div>
+
+        <label>기둥 높이 L (m)</label>
+        <input type="range" id="height" min="1" max="5" step="0.5" value="2"/>
+
+        <label>보기 옵션</label>
+        <div class="row">
+          <button id="pressBtn" class="primary">위에서 눌러보기(애니메이션)</button>
+          <button id="resetBtn">리셋</button>
+        </div>
+
+        <hr style="border-color: rgba(255,255,255,.1)">
+        <div class="explain">
+          <div class="card" style="background:transparent; border-color:rgba(255,255,255,.12)">
+            <b>찰흙(면적 같게)</b>
+            <p class="note">같은 양의 찰흙으로 모양을 만들어요. 둥근 원은 힘이 고르게 퍼져서 잘 버텨요.</p>
+          </div>
+          <div class="card" style="background:transparent; border-color:rgba(255,255,255,.12)">
+            <b>줄(둘레 같게)</b>
+            <p class="note">같은 길이의 줄로 둘러싸요. 삼각형은 더 꽉 모여서 잘 버텨요.</p>
+          </div>
+        </div>
+
+        <p class="footer">교육용 단순화 모델(오일러 좌굴). 재료·끝조건은 모두 같다고 가정해요.</p>
+      </section>
+
+      <section class="viz">
+        <div class="card svgwrap">
+          <div class="stage">
+            <svg id="preview" viewBox="-60 -60 120 120" aria-label="단면 미리보기"></svg>
+            <div class="press"><span class="tag">위에서 누르는 힘 ↓</span></div>
+          </div>
+          <div class="legend">
+            <b>Strength Score (상대):</b>
+            <div class="barlist" id="barList"></div>
+          </div>
+        </div>
+        
+        <div class="card" id="readout">
+          <div><b>설명</b></div>
+          <p class="note" id="explainText">같은 찰흙(면적)일 땐 둥근 기둥이 가장 잘 버텨요. 같은 줄(둘레)일 땐 삼각형이 제일 빡빡해서 잘 버텨요.</p>
+          <div class="formula" aria-live="polite">
+            <div><b>계산식</b></div>
+            <pre id="formulaBox">찰흙 모드 (면적 A0 = 0.01 m^2 유지)
+원: r = sqrt(A0 / pi) ≈ 0.056 m
+정n각형: R = sqrt((2 * A0) / (n * sin(2 * pi / n)))
+→ 이 반지름으로 각 모양의 I_min(단면 2차모멘트)을 비교합니다.</pre>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // ===== Geometry helpers =====
+    function regularPolygon(n, R=1, rotDeg=0){
+      const pts=[]; const rot=rotDeg*Math.PI/180;
+      for(let k=0;k<n;k++){
+        const ang = rot + 2*Math.PI*k/n;
+        pts.push([R*Math.cos(ang), R*Math.sin(ang)]);
+      }
+      return pts;
+    }
+    function polygonProps(pts){
+      // Shoelace for area & centroid & second moments about origin
+      let A=0, Cx=0, Cy=0, Ixx_o=0, Iyy_o=0; // Ixy not needed
+      for(let i=0;i<pts.length;i++){
+        const [x0,y0]=pts[i];
+        const [x1,y1]=pts[(i+1)%pts.length];
+        const c = x0*y1 - x1*y0;
+        A += c;
+        Cx += (x0 + x1) * c;
+        Cy += (y0 + y1) * c;
+        Ixx_o += (y0*y0 + y0*y1 + y1*y1) * c;
+        Iyy_o += (x0*x0 + x0*x1 + x1*x1) * c;
+      }
+      A *= 0.5;
+      const cx = Cx/(6*A), cy = Cy/(6*A);
+      const Ixx_c = Ixx_o/12 - A*cy*cy;
+      const Iyy_c = Iyy_o/12 - A*cx*cx;
+      return {A: Math.abs(A), cx, cy, Ixx: Math.abs(Ixx_c), Iyy: Math.abs(Iyy_c)};
+    }
+
+    // For circle (exact)
+    const circleByArea = (A)=>{
+      const r = Math.sqrt(A/Math.PI);
+      const I = Math.PI*r**4/4;
+      return {A, Ixx:I, Iyy:I, r};
+    };
+    const circleByPerimeter = (P)=>{
+      const r = P/(2*Math.PI);
+      const A = Math.PI*r*r;
+      const I = Math.PI*r**4/4;
+      return {A, Ixx:I, Iyy:I, r};
+    };
+
+    // Scale polygon to target area or perimeter
+    const scalePolyToArea = (n, A_target)=>{
+      // start with circumradius=1
+      let pts = regularPolygon(n,1, (n%2===0? 0: -90/n)); // small rotation for nicer look
+      const raw = polygonProps(pts);
+      const s = Math.sqrt(A_target/raw.A);
+      pts = pts.map(([x,y])=>[x*s,y*s]);
+      const p = polygonProps(pts);
+      return {pts, ...p};
+    };
+    const scalePolyToPerimeter = (n, P_target)=>{
+      const R1=1; // base
+      let pts = regularPolygon(n,R1,(n%2===0? 0: -90/n));
+      // perimeter for circumradius R: P = 2 n R sin(pi/n)
+      const P1 = 2*n*R1*Math.sin(Math.PI/n);
+      const s = P_target/P1;
+      pts = regularPolygon(n, R1*s, (n%2===0? 0: -90/n));
+      const p = polygonProps(pts);
+      return {pts, ...p};
+    };
+
+    // Strength score: proportional to min(Ixx,Iyy) with same E,L,K
+    function strengthFromI(I){
+      return I; // relative; we'll normalize later
+    }
+
+    // ===== UI State =====
+    const shapes = [
+      {id:"tri", label:"삼각형", kind:"poly", n:3},
+      {id:"sq",  label:"네모",   kind:"poly", n:4},
+      {id:"pent",label:"오각형", kind:"poly", n:5},
+      {id:"hex", label:"육각형", kind:"poly", n:6},
+      {id:"hept",label:"칠각",  kind:"poly", n:7},
+      {id:"oct", label:"팔각",  kind:"poly", n:8},
+      {id:"non", label:"구각",  kind:"poly", n:9},
+      {id:"cir", label:"원",    kind:"circle"}
+    ];
+
+    const state = {
+      mode: 'area', // 'area' | 'perimeter'
+      height: 2,
+      enabled: new Set(shapes.map(s=>s.id))
+    };
+
+    // ===== Build controls =====
+    const chipsWrap = document.getElementById('shapeChips');
+    shapes.forEach(s=>{
+      const el = document.createElement('button');
+      el.className = 'chip active';
+      el.textContent = s.label;
+      el.dataset.id = s.id;
+      el.onclick = ()=>{
+        if(state.enabled.has(s.id)) { state.enabled.delete(s.id); el.classList.remove('active'); }
+        else { state.enabled.add(s.id); el.classList.add('active'); }
+        renderAll();
+      };
+      chipsWrap.appendChild(el);
+    });
+
+    document.querySelectorAll('.chip[data-mode]').forEach(btn=>{
+      btn.onclick = ()=>{
+        document.querySelectorAll('.chip[data-mode]').forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        state.mode = btn.dataset.mode;
+        document.getElementById('modeTag').textContent = state.mode==='area' ? '찰흙 모드' : '줄 모드';
+        renderAll();
+      };
+    });
+
+    document.getElementById('height').addEventListener('input', (e)=>{ state.height = +e.target.value; renderAll(); });
+    document.getElementById('resetBtn').onclick = ()=>{ state.mode='area'; state.height=2; state.enabled=new Set(shapes.map(s=>s.id)); document.getElementById('height').value=2; document.querySelectorAll('.chip[data-mode]').forEach((b,i)=>b.classList.toggle('active', i===0)); document.getElementById('modeTag').textContent='찰흙 모드'; chipsWrap.querySelectorAll('.chip').forEach(c=>c.classList.add('active')); renderAll(); };
+
+    // Simple press animation handled via CSS keyframes
+    const pressBtn = document.getElementById('pressBtn');
+    const stage = document.querySelector('.stage');
+    const previewSvg = document.getElementById('preview');
+    pressBtn.addEventListener('click', ()=>{
+      if(stage.classList.contains('is-pressed')) return;
+      stage.classList.add('is-pressed');
+      pressBtn.disabled = true;
+    });
+    previewSvg.addEventListener('animationend', (evt)=>{
+      if(evt.animationName !== 'pressSquash') return;
+      stage.classList.remove('is-pressed');
+      pressBtn.disabled = false;
+    });
+
+    // ===== Rendering =====
+    function renderAll(){
+      const mode = state.mode;
+      const A0 = 100/1e4; // 100 cm^2 => m^2 (internal unit = m, but SVG is unitless; only relative I matters)
+      const P0 = 120/100; // 120 cm => m (relative only)
+
+      // Build dataset
+      let data=[];
+      for(const s of shapes){
+        if(!state.enabled.has(s.id)) continue;
+        let Imin=0, pts=null, A=0;
+        if(s.kind==='circle'){
+          const circ = (mode==='area') ? circleByArea(A0) : circleByPerimeter(P0);
+          Imin = circ.Ixx; A=circ.A; pts = circleToPolyPoints(circ.r,90); // for drawing circle as many-sided poly
+        } else {
+          const poly = (mode==='area') ? scalePolyToArea(s.n, A0) : scalePolyToPerimeter(s.n, P0);
+          Imin = Math.min(poly.Ixx, poly.Iyy); A=poly.A; pts = poly.pts;
+        }
+        // strength score proportional to I (others same)
+        data.push({id:s.id, label:s.label, I:Imin, A, pts, n:s.n||0});
+      }
+
+      // Normalize
+      const maxI = Math.max(...data.map(d=>d.I));
+      data.forEach(d=> d.score = Math.round(100*d.I/maxI));
+
+      // Sort desc by score
+      data.sort((a,b)=> b.score - a.score);
+
+      // SVG preview
+      drawPreview(data);
+
+      // Bars
+      const barList = document.getElementById('barList');
+      barList.innerHTML='';
+      data.forEach(d=>{
+        const row=document.createElement('div'); row.className='bar';
+        const name=document.createElement('div'); name.textContent=d.label; row.appendChild(name);
+        const meter=document.createElement('div'); meter.className='meter'; const fill=document.createElement('i'); fill.style.width = d.score+'%'; meter.appendChild(fill); row.appendChild(meter);
+        const val=document.createElement('div'); val.style.textAlign='right'; val.textContent=d.score; row.appendChild(val);
+        barList.appendChild(row);
+      });
+
+      // Explain text
+      const txt = document.getElementById('explainText');
+      txt.innerHTML = (mode==='area')
+        ? '같은 찰흙(면적)으로 만들면, 둥근 원이 힘을 고르게 나눠 가져서 제일 잘 버텨요. 삼각형처럼 뾰족한 모양은 힘이 한쪽으로 몰려요.'
+        : '같은 길이의 줄(둘레)로 둘러싸면, 삼각형이 더 꽉 모여 있어서 잘 버텨요. 원은 넓게 퍼져 조금 더 쉽게 눌려요.';
+      const formulaBox = document.getElementById('formulaBox');
+      if(formulaBox){
+        if(mode==='area'){
+          const rCircle = circleByArea(A0).r.toFixed(3);
+          formulaBox.textContent = [
+            `찰흙 모드 (면적 A0 = ${A0.toFixed(2)} m^2 유지)`,
+            `원: r = sqrt(A0 / pi) ≈ ${rCircle} m`,
+            '정n각형: R = sqrt((2 * A0) / (n * sin(2 * pi / n)))',
+            '→ 이 반지름으로 각 모양의 I_min(단면 2차모멘트)을 비교합니다.'
+          ].join('\n');
+        } else {
+          const rCircle = circleByPerimeter(P0).r.toFixed(3);
+          formulaBox.textContent = [
+            `줄 모드 (둘레 P0 = ${P0.toFixed(1)} m 유지)`,
+            `원: r = P0 / (2 * pi) ≈ ${rCircle} m`,
+            '정n각형: R = P0 / (2 * n * sin(pi / n))',
+            '→ 같은 방식으로 I_min을 계산해 순위를 만듭니다.'
+          ].join('\n');
+        }
+      }
+    }
+
+    // Draw multiple shapes into SVG centered nicely
+    function drawPreview(data){
+      const svg = document.getElementById('preview');
+      svg.innerHTML='';
+
+      // layout rows/cols (max 6 per row)
+      const cols = 6; const pad=18; const cell=36; // user units
+      const rows = Math.ceil(data.length/cols);
+      const totalW = cols*cell + (cols-1)*pad; const totalH = rows*cell + (rows-1)*pad;
+      // adjust viewBox to fit content
+      const vbW = Math.max(120, totalW+20), vbH = Math.max(120, totalH+20);
+      svg.setAttribute('viewBox', `${-vbW/2} ${-vbH/2} ${vbW} ${vbH}`);
+
+      data.forEach((d,i)=>{
+        const r = i%cols; const c = Math.floor(i/cols);
+        const x = -totalW/2 + r*(cell+pad) + cell/2;
+        const y = -totalH/2 + c*(cell+pad) + cell/2;
+        // scale each shape to fit cell visually
+        const bb = bboxOfPoints(d.pts);
+        const scale = 0.8 * Math.min(cell/(bb.w||1), cell/(bb.h||1));
+        const path = ptsToPath(d.pts.map(p=>[x + (p[0])*scale, y + (p[1])*scale]));
+        const g = document.createElementNS('http://www.w3.org/2000/svg','path');
+        g.setAttribute('d', path);
+        g.setAttribute('fill', 'rgba(255,255,255,0.06)');
+        g.setAttribute('stroke', 'rgba(255,255,255,0.9)');
+        g.setAttribute('stroke-width', '1.6');
+        g.setAttribute('vector-effect','non-scaling-stroke');
+        g.setAttribute('aria-label', d.label);
+        svg.appendChild(g);
+
+        // label
+        const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+        text.setAttribute('x', x);
+        text.setAttribute('y', y + cell/2 - 6);
+        text.setAttribute('text-anchor','middle');
+        text.setAttribute('fill','var(--muted)');
+        text.setAttribute('font-size','8');
+        text.textContent = d.label;
+        svg.appendChild(text);
+      });
+    }
+
+    function ptsToPath(pts){
+      return 'M'+pts.map(p=>p[0].toFixed(3)+','+p[1].toFixed(3)).join('L')+'Z';
+    }
+    function bboxOfPoints(pts){
+      let minx=Infinity,miny=Infinity,maxx=-Infinity,maxy=-Infinity;
+      pts.forEach(([x,y])=>{ if(x<minx)minx=x; if(y<miny)miny=y; if(x>maxx)maxx=x; if(y>maxy)maxy=y; });
+      return {x:minx,y:miny,w:maxx-minx,h:maxy-miny};
+    }
+    function circleToPolyPoints(r, sides=64){
+      return regularPolygon(sides, r, 0);
+    }
+
+    // kickoff
+    renderAll();
+  </script>
+</body>
+</html>
